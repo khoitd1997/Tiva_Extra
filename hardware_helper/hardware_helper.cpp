@@ -19,7 +19,9 @@
 #include "inc/hw_types.h"
 
 #include "tiva_utils/bit_manipulation.h"
+#include "tiva_utils/peripheral_utils.hpp"
 #include "tiva_utils/pin_utils.hpp"
+#include "tiva_utils/pwm_utils.hpp"
 
 static const uint32_t PIN_DESC_CHAR_PORT_INDEX = 0;
 static const uint32_t PIN_DESC_CHAR_PIN_INDEX  = 1;
@@ -32,14 +34,53 @@ static uint32_t charToNum(char target) {
 }
 
 // expected format to be like "E5"
-void parsePinDesc(const char pinDesc[PIN_CHAR_DESC_LEN],
-                  uint32_t   outputPinDesc[PIN_DESCRIPTION_LEN]) {
+void initPeripheralPin(const char      pinDesc[PIN_CHAR_DESC_LEN],
+                       uint32_t*       outputPinDesc,
+                       const uint32_t& pinFlag,
+                       PeripheralType  peripheralType) {
   assert(pinDesc);
   assert(outputPinDesc);
   assert(2 == strlen(pinDesc));
 
-  outputPinDesc[PIN_DESC_CLOCK_INDEX] = gpioPeriAddrFromName(pinDesc[PIN_DESC_CHAR_PORT_INDEX]);
-  outputPinDesc[PIN_DESC_PORT_INDEX]  = gpioPortAddrFromName(pinDesc[PIN_DESC_CHAR_PORT_INDEX]);
-  outputPinDesc[PIN_DESC_PIN_INDEX] = gpioMaskFromName(charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+  uint32_t pinClock = gpioPeriAddrFromName(pinDesc[PIN_DESC_CHAR_PORT_INDEX]);
+  uint32_t pinPort  = gpioPortAddrFromName(pinDesc[PIN_DESC_CHAR_PORT_INDEX]);
+  uint32_t pinNum   = gpioMaskFromName(charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+
+  switch (peripheralType) {
+    case PeripheralType::GPIO_INPUT:
+    case PeripheralType::GPIO_OUTPUT:
+      outputPinDesc[PERIPH_DESCR_CLOCK_INDEX] =
+          gpioPeriAddrFromName(pinDesc[PIN_DESC_CHAR_PORT_INDEX]);
+      outputPinDesc[GPIO_DESCR_PORT_INDEX] =
+          gpioPortAddrFromName(pinDesc[PIN_DESC_CHAR_PORT_INDEX]);
+      outputPinDesc[GPIO_DESCR_PIN_INDEX] =
+          gpioMaskFromName(charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+      break;
+
+      // case PeripheralType::ADC:
+      //   pinClock = adcPeriphAddrByName();
+      //   pinPort  = ;
+      //   pinNum   = ;
+      //   break;
+
+      // case PeripheralType::DMA:
+      //   pinClock = ;
+      //   pinPort  = ;
+      //   pinNum   = ;
+      //   break;
+
+    case PeripheralType::PWM:
+      outputPinDesc[PERIPH_DESCR_CLOCK_INDEX] = pwmPeriAddrFromName(
+          pinDesc[PIN_DESC_CHAR_PORT_INDEX], charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+      outputPinDesc[PWM_DESCR_MODULE_INDEX] = pwmBaseAddrFromName(
+          pinDesc[PIN_DESC_CHAR_PORT_INDEX], charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+      outputPinDesc[PWM_DESCR_GEN_INDEX] = pwmGenFromName(
+          pinDesc[PIN_DESC_CHAR_PORT_INDEX], charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+      outputPinDesc[PWM_DESCR_OUTPUT_INDEX] = pwmOutputFromName(
+          pinDesc[PIN_DESC_CHAR_PORT_INDEX], charToNum(pinDesc[PIN_DESC_CHAR_PIN_INDEX]));
+      break;
+  }
+  enableClockPeripheral(pinClock, outputPinDesc[PERIPH_DESCR_CLOCK_INDEX]);
+  configurePeripheralPin(pinPort, pinNum, pinFlag, peripheralType);
 }
-}
+}  // namespace tivaextra

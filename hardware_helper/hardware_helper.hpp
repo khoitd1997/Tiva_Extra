@@ -2,15 +2,18 @@
 #define _HARDWARE_HELPER_HPP
 #include <cstdint>
 
-#include "tiva_utils/pin_utils.hpp"
-
-static const uint32_t PIN_CHAR_DESC_LEN = 3;
+#include "driverlib/gpio.h"
+#include "tiva_utils/peripheral_utils.hpp"
 
 namespace tivaextra {
 
+static const uint32_t PIN_CHAR_DESC_LEN = 3;
+
 // general parsing
-void parsePinDesc(const char pinDesc[PIN_CHAR_DESC_LEN],
-                  uint32_t   outputPinDesc[PIN_DESCRIPTION_LEN]);
+void initPeripheralPin(const char      pinDesc[PIN_CHAR_DESC_LEN],
+                       uint32_t *      outputPinDesc,
+                       const uint32_t &pinFlag,
+                       PeripheralType  peripheralType);
 
 // adc
 uint32_t adcPeriphAddrByName(const uint32_t &adcModuleNum);
@@ -33,5 +36,12 @@ uint32_t dmaSrcIncFromNum(const uint32_t &size);
 uint32_t dmaDataSizeFromNum(const uint32_t &size);
 uint32_t dmaDestIncFromNum(const uint32_t &size);
 uint32_t dmaArbSizeFromNum(const uint32_t &arbSize);
+
+// pwm
+uint32_t pwmPeriAddrFromName(const char &portName, const uint32_t &pinName);
+uint32_t pwmBaseAddrFromName(const char &portName, const uint32_t &pinName);
+uint32_t pwmGenFromName(const char &portName, const uint32_t &pinName);
+uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName);
+
 }  // namespace tivaextra
 #endif

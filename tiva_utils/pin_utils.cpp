@@ -14,19 +14,14 @@
 #include <cassert>
 #include <cstdint>
 
+#include "tiva_utils/peripheral_utils.hpp"
+
 namespace tivaextra {
 
-void enableClockPeripheral(const uint32_t pinDesc[PIN_DESC_CLOCK_INDEX]) {
-  SysCtlPeripheralEnable(PIN_DESC_CLOCK_INDEX);
-  while (!SysCtlPeripheralReady(pinDesc[PIN_DESC_CLOCK_INDEX])) {
-    // wait for clock to be ready
-  }
-}
-
-void pinDescCheck(uint32_t pinDesc[PIN_DESCRIPTION_LEN]) {
-  const uint32_t clockFlag = pinDesc[PIN_DESC_CLOCK_INDEX];
-  const uint32_t portFlag  = pinDesc[PIN_DESC_PORT_INDEX];
-  const uint32_t pinFlag   = pinDesc[PIN_DESC_PIN_INDEX];
+void pinDescCheck(uint32_t pinDesc[GPIO_DESCR_LEN]) {
+  const uint32_t clockFlag = pinDesc[PERIPH_DESCR_CLOCK_INDEX];
+  const uint32_t portFlag  = pinDesc[GPIO_DESCR_PORT_INDEX];
+  const uint32_t pinFlag   = pinDesc[GPIO_DESCR_PIN_INDEX];
 
   assert((clockFlag == SYSCTL_PERIPH_GPIOB) || (clockFlag == SYSCTL_PERIPH_GPIOA) ||
          (clockFlag == SYSCTL_PERIPH_GPIOC) || (clockFlag == SYSCTL_PERIPH_GPIOD) ||
@@ -56,26 +51,44 @@ void pinDescCheck(uint32_t pinDesc[PIN_DESCRIPTION_LEN]) {
          !(GPIO_PIN_1 == pinFlag && GPIO_PORTC_BASE == portFlag) &&
          !(GPIO_PIN_0 == pinFlag && GPIO_PORTC_BASE == portFlag) &&
 
-         !(GPIO_PIN_7 == pinFlag && GPIO_PORTD_BASE == portFlag) &&
+         !(GPIO_PIN_7 == pinFlag && GPIO_PORTD_BASE == portFlag));
 
-         !(GPIO_PIN_0 == pinFlag && GPIO_PORTF_BASE == portFlag));
+  // namespace tivaextra
 }
 
-void pinModeSwitch(const uint32_t pinDesc[PIN_DESCRIPTION_LEN], const bool &isInput) {
+void gpioModeSwitch(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &isInput) {
   if (isInput) {
-    GPIOPinTypeGPIOInput(pinDesc[PIN_DESC_PORT_INDEX], pinDesc[PIN_DESC_PIN_INDEX]);
+    GPIOPinTypeGPIOInput(pinDesc[GPIO_DESCR_PORT_INDEX], pinDesc[GPIO_DESCR_PIN_INDEX]);
   } else {
-    GPIOPinTypeGPIOOutput(pinDesc[PIN_DESC_PORT_INDEX], pinDesc[PIN_DESC_PIN_INDEX]);
+    GPIOPinTypeGPIOOutput(pinDesc[GPIO_DESCR_PORT_INDEX], pinDesc[GPIO_DESCR_PIN_INDEX]);
   }
 }
 
-void pinWrite(const uint32_t pinDesc[PIN_DESCRIPTION_LEN], const bool &output) {
-  uint8_t pinOutput = output ? pinDesc[PIN_DESC_PIN_INDEX] : 0;
-  GPIOPinWrite(pinDesc[PIN_DESC_PORT_INDEX], pinDesc[PIN_DESC_PIN_INDEX], pinOutput);
+void pinWrite(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &output) {
+  uint8_t pinOutput = output ? pinDesc[GPIO_DESCR_PIN_INDEX] : 0;
+  GPIOPinWrite(pinDesc[GPIO_DESCR_PORT_INDEX], pinDesc[GPIO_DESCR_PIN_INDEX], pinOutput);
 }
 
-bool pinRead(const uint32_t pinDesc[PIN_DESCRIPTION_LEN]) {
-  return GPIOPinRead(pinDesc[PIN_DESC_PORT_INDEX], pinDesc[PIN_DESC_PIN_INDEX]) ? true : false;
+bool pinRead(const uint32_t pinDesc[GPIO_DESCR_LEN]) {
+  return GPIOPinRead(pinDesc[GPIO_DESCR_PORT_INDEX], pinDesc[GPIO_DESCR_PIN_INDEX]) ? true : false;
 }
 
+void gpioPadConfig(const uint32_t  pinDesc[GPIO_DESCR_LEN],
+                   const uint32_t &driveStrengthFlag,
+                   const uint32_t &pinTypeFlag) {
+  assert(pinDesc);
+  assert(GPIO_STRENGTH_2MA == driveStrengthFlag || GPIO_STRENGTH_4MA == driveStrengthFlag ||
+         GPIO_STRENGTH_6MA == driveStrengthFlag || GPIO_STRENGTH_8MA == driveStrengthFlag ||
+         GPIO_STRENGTH_8MA_SC == driveStrengthFlag);
+
+  assert(GPIO_PIN_TYPE_STD == pinTypeFlag || GPIO_PIN_TYPE_STD_WPU == pinTypeFlag ||
+         GPIO_PIN_TYPE_STD_WPD == pinTypeFlag || GPIO_PIN_TYPE_OD == pinTypeFlag ||
+         GPIO_PIN_TYPE_ANALOG == pinTypeFlag || GPIO_PIN_TYPE_WAKE_HIGH == pinTypeFlag ||
+         GPIO_PIN_TYPE_WAKE_LOW == pinTypeFlag);
+
+  GPIOPadConfigSet(pinDesc[GPIO_DESCR_PORT_INDEX],
+                   pinDesc[GPIO_DESCR_PIN_INDEX],
+                   driveStrengthFlag,
+                   pinTypeFlag);
 }
+}  // namespace tivaextra
