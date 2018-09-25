@@ -16,8 +16,13 @@ static const uint32_t PWM_DESCR_OUTPUT_INDEX = 3;
 void pwmConfigure(const uint32_t  pinDesc[PWM_DESCR_LEN],
                   const uint32_t& pwmClockFlag,
                   const float&    pwmFreqKHz,
-                  const float&    pwmPulseWidthPercent);
-void pwmEnable(const uint32_t pinDesc[PWM_DESCR_LEN]);
+                  const float&    pwmPulseWidthFraction,
+                  const uint32_t& configFlags);
+void pwmConfigureDeadband(const uint32_t  pinDesc[PWM_DESCR_LEN],
+                          const bool&     isDeadbBandEnabled,
+                          const uint32_t& riseTimeDelay,
+                          const uint32_t& fallTimeDelay);
+void pwmEnable(const uint32_t pinDesc[PWM_DESCR_LEN], const bool& isDeadBandEnabled);
 
 }  // namespace tivaextra
 

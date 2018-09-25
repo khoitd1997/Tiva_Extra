@@ -91,11 +91,11 @@ void configurePeripheralPin(const uint32_t&       portName,
                             const uint32_t&       pinName,
                             const uint32_t&       pinFlag,
                             const PeripheralType& periphType) {
-  configurePinType(portName, pinName, periphType);
   if ((PeripheralType::GPIO_INPUT != periphType) && (PeripheralType::GPIO_OUTPUT != periphType) &&
       (PeripheralType::GPIO_OUTPUT_OD != periphType)) {
     GPIOPinConfigure(pinFlag);
   }
+  configurePinType(portName, pinName, periphType);
 
   // // TODO: finish deciding what to do with this
   // switch (portName) {

@@ -64,12 +64,12 @@ void gpioModeSwitch(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &isInput)
   }
 }
 
-void pinWrite(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &output) {
+void gpioWrite(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &output) {
   uint8_t pinOutput = output ? pinDesc[GPIO_DESCR_PIN_INDEX] : 0;
   GPIOPinWrite(pinDesc[GPIO_DESCR_PORT_INDEX], pinDesc[GPIO_DESCR_PIN_INDEX], pinOutput);
 }
 
-bool pinRead(const uint32_t pinDesc[GPIO_DESCR_LEN]) {
+bool gpioRead(const uint32_t pinDesc[GPIO_DESCR_LEN]) {
   return GPIOPinRead(pinDesc[GPIO_DESCR_PORT_INDEX], pinDesc[GPIO_DESCR_PIN_INDEX]) ? true : false;
 }
 

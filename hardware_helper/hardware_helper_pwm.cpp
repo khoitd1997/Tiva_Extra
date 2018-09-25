@@ -252,11 +252,11 @@ uint32_t pwmGenFromName(const char &portName, const uint32_t &pinName) {
           break;
 
         case 4:
-          return PWM_GEN_1;
+          return PWM_GEN_2;
           break;
 
         case 5:
-          return PWM_GEN_1;
+          return PWM_GEN_2;
           break;
       }
       break;
@@ -340,10 +340,10 @@ uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName) {
     case 'A':
       switch (pinName) {
         case 6:
-          return PWM_OUT_0;
+          return PWM_OUT_2;
           break;
         case 7:
-          return PWM_OUT_1;
+          return PWM_OUT_3;
           break;
       }
       break;
@@ -359,11 +359,11 @@ uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName) {
           break;
 
         case 4:
-          return PWM_OUT_0;
+          return PWM_OUT_2;
           break;
 
         case 5:
-          return PWM_OUT_1;
+          return PWM_OUT_3;
           break;
       }
       break;
@@ -371,10 +371,10 @@ uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName) {
     case 'C':
       switch (pinName) {
         case 4:
-          return PWM_OUT_0;
+          return PWM_OUT_6;
           break;
         case 5:
-          return PWM_OUT_1;
+          return PWM_OUT_7;
           break;
       }
       break;
@@ -404,11 +404,11 @@ uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName) {
     case 'E':
       switch (pinName) {
         case 4:
-          return PWM_OUT_0;
+          return PWM_OUT_4;
           break;
 
         case 5:
-          return PWM_OUT_1;
+          return PWM_OUT_5;
           break;
       }
       break;
@@ -416,7 +416,7 @@ uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName) {
     case 'F':
       switch (pinName) {
         case 2:
-          return PWM_OUT_0;
+          return PWM_OUT_6;
           break;
 
         case 4:
@@ -425,15 +425,15 @@ uint32_t pwmOutputFromName(const char &portName, const uint32_t &pinName) {
           break;
 
         case 0:
-          return PWM_OUT_0;
+          return PWM_OUT_4;
           break;
 
         case 1:
-          return PWM_OUT_1;
+          return PWM_OUT_5;
           break;
 
         case 3:
-          return PWM_OUT_1;
+          return PWM_OUT_7;
           break;
       }
       break;

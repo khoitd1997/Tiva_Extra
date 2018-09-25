@@ -2,6 +2,9 @@
 
 #include "peripheral_utils.hpp"
 
+#include <cassert>
+#include <cstdint>
+
 // peripheral
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
@@ -11,23 +14,27 @@
 #include "driverlib/udma.h"
 
 // hardware
-#include <cassert>
-#include <cstdint>
 #include "inc/hw_memmap.h"
 #include "inc/hw_pwm.h"
 #include "inc/hw_types.h"
+
+#include "tiva_utils/bit_manipulation.h"
 
 namespace tivaextra {
 
 void pwmConfigure(const uint32_t  pinDesc[PWM_DESCR_LEN],
                   const uint32_t& pwmClockFlag,
                   const float&    pwmFreqKHz,
-                  const float&    pwmPulseWidthPercent) {
-  PWMGenConfigure(PWM0_BASE,
-                  PWM_GEN_0,
-                  PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC | PWM_GEN_MODE_GEN_NO_SYNC |
-                      PWM_GEN_MODE_FAULT_LATCHED);
+                  const float&    pwmPulseWidthFraction,
+                  const uint32_t& configFlags) {
+  PWMGenConfigure(pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX], configFlags);
   SysCtlPWMClockSet(pwmClockFlag);
+  for (uint32_t waitIndex = 0; waitIndex < 50; ++waitIndex) {
+    // wait until  the PWM clock is set
+  }
+
+  assert(pwmClockFlag == SysCtlPWMClockGet());
+
   uint32_t pwmClockHz = SysCtlClockGet();
   switch (pwmClockFlag) {
     case SYSCTL_PWMDIV_1:
@@ -58,15 +65,37 @@ void pwmConfigure(const uint32_t  pinDesc[PWM_DESCR_LEN],
   PWMGenPeriodSet(
       pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX], pwmClockPeriodTick);
 
-  PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, pwmPulseWidthPercent * pwmClockPeriodTick / 100);
+  PWMPulseWidthSet(pinDesc[PWM_DESCR_MODULE_INDEX],
+                   pinDesc[PWM_DESCR_OUTPUT_INDEX],
+                   (pwmPulseWidthFraction * pwmClockPeriodTick));
 }
 
-void pwmEnable(const uint32_t pinDesc[PWM_DESCR_LEN]) {
+void pwmConfigureDeadband(const uint32_t  pinDesc[PWM_DESCR_LEN],
+                          const bool&     isDeadbBandEnabled,
+                          const uint32_t& riseTimeDelay,
+                          const uint32_t& fallTimeDelay) {
+  isDeadbBandEnabled
+      ? PWMDeadBandEnable(pinDesc[PWM_DESCR_MODULE_INDEX],
+                          pinDesc[PWM_DESCR_GEN_INDEX],
+                          riseTimeDelay,
+                          fallTimeDelay)
+      : PWMDeadBandDisable(pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX]);
+}
+
+void pwmEnable(const uint32_t pinDesc[PWM_DESCR_LEN], const bool& isDeadBandEnabled) {
+  uint32_t pwmOutputNumber = (bit_get(pinDesc[PWM_DESCR_OUTPUT_INDEX], 0xf));
+  uint32_t pwmOutBit       = 1 << pwmOutputNumber;
+
+  if (isDeadBandEnabled) {
+    if (pwmOutputNumber % 2 != 0) {
+      pwmOutBit |= 1 << (pwmOutputNumber - 1);
+    } else {
+      pwmOutBit |= 1 << (pwmOutputNumber + 1);
+    }
+  }
+
+  PWMOutputState(pinDesc[PWM_DESCR_MODULE_INDEX], pwmOutBit, true);
+
   PWMGenEnable(pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX]);
-
-  PWMOutputState(pinDesc[PWM_DESCR_MODULE_INDEX],
-                 ((PWM_OUT_0 == pinDesc[PWM_DESCR_OUTPUT_INDEX]) ? PWM_OUT_0_BIT : PWM_OUT_1_BIT),
-                 true);
 }
-
 }  // namespace tivaextra

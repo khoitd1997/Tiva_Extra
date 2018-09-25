@@ -26,9 +26,9 @@ void pinDescCheck(uint32_t pinDesc[GPIO_DESCR_LEN]);
 
 void gpioModeSwitch(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &isInput);
 
-void pinWrite(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &output);
+void gpioWrite(const uint32_t pinDesc[GPIO_DESCR_LEN], const bool &output);
 
-bool pinRead(const uint32_t pinDesc[GPIO_DESCR_LEN]);
+bool gpioRead(const uint32_t pinDesc[GPIO_DESCR_LEN]);
 
 void gpioPadConfig(const uint32_t  pinDesc[GPIO_DESCR_LEN],
                    const uint32_t &driveStrengthFlag,
