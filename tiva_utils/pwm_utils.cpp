@@ -35,7 +35,19 @@ void pwmConfigure(const uint32_t  pinDesc[PWM_DESCR_LEN],
 
   assert(pwmClockFlag == SysCtlPWMClockGet());
 
-  uint32_t pwmClockHz = SysCtlClockGet();
+  uint32_t pwmClockPeriodTick = pwmClockHzGet() * (1 / (1000 * pwmFreqKHz));
+
+  PWMGenPeriodSet(
+      pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX], pwmClockPeriodTick);
+
+  PWMPulseWidthSet(pinDesc[PWM_DESCR_MODULE_INDEX],
+                   pinDesc[PWM_DESCR_OUTPUT_INDEX],
+                   (pwmPulseWidthFraction)*pwmClockPeriodTick);
+}
+
+float pwmClockHzGet(void) {
+  float    pwmClockHz   = SysCtlClockGet();
+  uint32_t pwmClockFlag = SysCtlPWMClockGet();
   switch (pwmClockFlag) {
     case SYSCTL_PWMDIV_1:
       pwmClockHz /= 1;
@@ -58,27 +70,27 @@ void pwmConfigure(const uint32_t  pinDesc[PWM_DESCR_LEN],
     case SYSCTL_PWMDIV_64:
       pwmClockHz /= 64;
       break;
+    default:
+      assert(1 == 0);
+      break;
   }
-
-  uint32_t pwmClockPeriodTick = pwmClockHz * (1 / (1000 * pwmFreqKHz));
-
-  PWMGenPeriodSet(
-      pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX], pwmClockPeriodTick);
-
-  PWMPulseWidthSet(pinDesc[PWM_DESCR_MODULE_INDEX],
-                   pinDesc[PWM_DESCR_OUTPUT_INDEX],
-                   (pwmPulseWidthFraction * pwmClockPeriodTick));
+  return pwmClockHz;
 }
 
-void pwmConfigureDeadband(const uint32_t  pinDesc[PWM_DESCR_LEN],
-                          const bool&     isDeadbBandEnabled,
-                          const uint32_t& riseTimeDelay,
-                          const uint32_t& fallTimeDelay) {
+void pwmConfigureDeadband(const uint32_t pinDesc[PWM_DESCR_LEN],
+                          const bool&    isDeadbBandEnabled,
+                          const float&   riseTimeDelayFraction,
+                          const float&   fallTimeDelayFraction,
+                          const float&   pwmFreqKHz) {
+  auto     pwmClockFreq = pwmClockHzGet();
+  uint32_t riseTimeTick = (pwmClockFreq * (1 / (1000 * pwmFreqKHz))) * riseTimeDelayFraction;
+  uint32_t fallTimeTick = (pwmClockFreq * (1 / (1000 * pwmFreqKHz))) * fallTimeDelayFraction;
+
   isDeadbBandEnabled
       ? PWMDeadBandEnable(pinDesc[PWM_DESCR_MODULE_INDEX],
                           pinDesc[PWM_DESCR_GEN_INDEX],
-                          riseTimeDelay,
-                          fallTimeDelay)
+                          riseTimeTick,
+                          fallTimeTick)
       : PWMDeadBandDisable(pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX]);
 }
 
@@ -96,6 +108,6 @@ void pwmEnable(const uint32_t pinDesc[PWM_DESCR_LEN], const bool& isDeadBandEnab
 
   PWMOutputState(pinDesc[PWM_DESCR_MODULE_INDEX], pwmOutBit, true);
 
-  PWMGenEnable(pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX]);
+  // PWMGenEnable(pinDesc[PWM_DESCR_MODULE_INDEX], pinDesc[PWM_DESCR_GEN_INDEX]);
 }
 }  // namespace tivaextra
