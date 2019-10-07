@@ -14,7 +14,7 @@
 #include <cassert>
 #include <cstdint>
 
-#include "tiva_utils/peripheral_utils.hpp"
+#include "peripheral_utils.hpp"
 
 namespace tivaextra {
 

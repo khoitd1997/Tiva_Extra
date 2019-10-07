@@ -1,6 +1,14 @@
 #include "swo_segger.h"
 
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include "driverlib/adc.h"
+
 void SWO_PrintChar(char c) {
+  ADCIntUnregister(1, 2);
   //
   // Check if ITM_TCR.ITMENA is set
   //
@@ -23,4 +31,9 @@ void SWO_PrintString(const char *s) {
   // Print out character per character
   //
   while (*s) { SWO_PrintChar(*s++); }
+}
+
+void SWO_PrintStringLine(const char *s) {
+  SWO_PrintString(s);
+  SWO_PrintChar('\n');
 }

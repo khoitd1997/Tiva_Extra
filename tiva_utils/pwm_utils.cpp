@@ -18,7 +18,7 @@
 #include "inc/hw_pwm.h"
 #include "inc/hw_types.h"
 
-#include "tiva_utils/bit_manipulation.h"
+#include "bit_manipulation.h"
 
 namespace tivaextra {
 

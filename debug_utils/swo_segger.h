@@ -9,6 +9,7 @@ extern "C" {
 
 void SWO_PrintChar(char c);
 void SWO_PrintString(const char *s);
+void SWO_PrintStringLine(const char *s);
 
 /*********************************************************************
  *
